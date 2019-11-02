@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>传智健康</title>
+    <meta name="description" content="传智健康">
+    <meta name="keywords" content="传智健康">
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../plugins/elementui/index.css">
+    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="hold-transition">
+<div id="app">
+    <div class="content-header">
+        <h1>预约管理
+            <small>检查项管理</small>
+        </h1>
+        <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
+            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item>预约管理</el-breadcrumb-item>
+            <el-breadcrumb-item>检查项管理</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <div class="app-container">
+        <div class="box">
+            <div class="filter-container">
+                <el-input placeholder="项目编码/项目名称" v-model="pagination.queryString" style="width: 200px;"
+                          class="filter-item"></el-input>
+                <el-button @click="findPage()" class="dalfBut">查询</el-button>
+                <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
+            </div>
+
+            <!--当el-table元素中注入data对象el-table-column数组后，在中用prop属性来对应对象中的键名即可填入数据，
+                用label属性来定义表格的列名。可以使用width属性来定义列宽。                                  -->
+            <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+                <el-table-column type="index" align="center" label="序号"></el-table-column>
+                <el-table-column prop="code" label="项目编码" align="center"></el-table-column>
+                <el-table-column prop="name" label="项目名称" align="center"></el-table-column>
+                <el-table-column label="适用性别" align="center">
+                    <template slot-scope="scope">
+                        <span>{{ scope.row.sex == '0' ? '不限' : scope.row.sex == '1' ? '男' : '女'}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="age" label="适用年龄" align="center"></el-table-column>
+                <el-table-column prop="remark" label="项目说明" align="center"></el-table-column>
+                <el-table-column label="操作" align="center">
+
+                    <!--    slot-scope="scope" 表格会把当前这一行的数据赋值给scope这个变量   -->
+                    <template slot-scope="scope">
+                        <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+                        <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+                    </template>
+
+                </el-table-column>
+            </el-table>
+
+
+            <!--    分页
+               class="pagiantion" 样式
+              @current-change="handleCurrentChange"  切换页码定义的方法
+              :current-page="pagination.currentPage" 当前页码
+              :page-size="pagination.pageSize"       每页显示的记录数
+              :total="pagination.total"              总数
+              设置layout，表示需要显示的内容，用逗号分隔，布局元素会依次显示。
+              prev表示上一页，next为下一页，pager表示页面代码列表，除此以外还提供了jumper和total，
+              size和特殊的布局符号->，->后的元素会靠右显示，jumper表示跳页元素，total表示总size体积数，
+              用于设置每页显示的页码数量。
+              -->
+            <el-pagination
+                    class="pagiantion"
+                    @current-change="handleCurrentChange"
+                    :current-page="pagination.currentPage"
+                    :page-size="pagination.pageSize"
+                    layout="total, prev, pager, next, jumper"
+                    :total="pagination.total">
+            </el-pagination>
+
+        </div>
+    </div>
+
+
+    <!--    添加的窗口 add   -->
+    <el-dialog title="新增检查项" :visible.sync="dialogFormVisible">
+        <el-form :model="formData" :rules="myrules" ref="addFrom" label-position="right">
+
+            <el-form :inline="true" :model="formInline" class="demo-form-inline">
+                <el-form-item label="项目编码" prop="code">
+                    <el-input v-model="formData.code"></el-input>
+                </el-form-item>
+                <el-form-item label="项目类型" prop="type">
+                    <el-input v-model="formData.type"></el-input>
+                </el-form-item>
+            </el-form>
+
+            <el-form :inline="true" :model="formInline" class="demo-form-inline">
+                <el-form-item label="您的年龄" prop="age">
+                    <el-input v-model="formData.age"></el-input>
+                </el-form-item>
+                <el-form-item label="您的性别" prop="sex">
+                    <el-select v-model="formData.sex">
+                        <el-option label="男" value="0"></el-option>
+                        <el-option label="女" value="2"></el-option>
+                    </el-select>
+                </el-form-item>
+            </el-form>
+
+            <el-form-item label="项目名称" prop="name">
+                <el-input v-model="formData.name"></el-input>
+            </el-form-item>
+
+        </el-form>
+        <el-button ref="mybtn" type="primary" class="butT" @click="handleAdd()">保存</el-button>
+    </el-dialog>
+
+
+    <!--    回写+编辑 窗口   -->
+    <el-dialog title="编辑检查项" :visible.sync="dialogFormVisible4Edit">
+        <el-form :model="formData" :rules="myrules" ref="addFrom">
+            <el-form-item label="项目编码" prop="code">
+                <el-input v-model="formData.code"></el-input>
+            </el-form-item>
+            <el-form-item label="项目名称" prop="name">
+                <el-input v-model="formData.name"></el-input>
+            </el-form-item>
+            <el-form-item label="性别" prop="sex">
+                <el-select v-model="formData.sex">
+                    <el-option label="男" value="0"></el-option>
+                    <el-option label="女" value="2"></el-option>
+                </el-select>
+            </el-form-item>
+        </el-form>
+        <el-button ref="mybtn" type="primary" class="butT" @click="handleEdit()">编辑</el-button>
+    </el-dialog>
+
+
+</div>
+</body>
+<!-- 引入组件库 -->
+<script src="../js/vue.js"></script>
+<script src="../plugins/elementui/index.js"></script>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script src="../js/axios-0.18.0.js"></script>
+<script>
+    var vue = new Vue({
+        el: '#app',
+        data: {
+            pagination: {//分页相关模型数据
+                currentPage: 1,//当前页码
+                pageSize: 10,//每页显示的记录数
+                total: 100,//总记录数
+                queryString: null//查询条件
+            },
+            dataList: [],//当前页要展示的分页列表数据
+            formData: {
+                sex: ''
+            },//表单数据
+            dialogFormVisible: false,//增加表单是否可见
+            dialogFormVisible4Edit: false,//编辑表单是否可见
+            myrules: {//校验规则
+                code: [
+                    {required: true, message: '请输入编码', trigger: 'blur'}
+                ],
+                name: [
+                    {required: true, message: '请输入名称', trigger: 'blur'},
+                ],
+                sex: [
+                    {required: true, message: '请选择性别', trigger: ['change', 'blur']},
+                ]
+            }
+        },
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+            this.findPage();
+        },
+        methods: {
+            //编辑
+            handleEdit() {
+                axios.post("/check/edit.do", this.formData).then((res) => {
+                    this.dialogFormVisible4Edit = false;
+                    this.findPage();
+                })
+            },
+
+            //添加
+            handleAdd() {
+                //我们要想执行表单校验就得调用表单对象的方法（validate），要想调用方法就得得到表单对象
+                // 1、this.$refs.addFrom 得到表单对象
+                // 2、this.$refs['addFrom'] 得到表单对象
+                console.log(this.$refs.addFrom.validate());
+
+                this.$refs.addFrom.validate((flag) => {
+                    if (flag) {
+                        //校验成功可以提交数据（     //POST 新增数据 PUT 更新数据 DELETE 删除数据 GET 获取数据）
+                        // axios.post().then().catch()
+                        // http://127.0.0.1:82/check/add.do
+                        ///check/add.do
+                        axios.post("/check/add.do", this.formData).then((res) => {
+                            if (res.data.flag) {
+                                //新增框关闭
+                                this.dialogFormVisible = false;
+                                //刷新页面
+                                this.findPage();
+                            }
+                            //不管成功失败都要提示提示用户
+                            this.$message({
+                                message: res.data.message,
+                                type: res.data.flag ? "success" : "error" //success error  warning info
+                            });
+                        })
+                    } else {
+                        //校验失败提示用户
+                        // this.$message.error('表单校验失败');
+                        this.$message({
+                            message: '表单校验失败',
+                            type: 'error' //success error  warning info
+                        });
+                        return false;
+                    }
+                })
+            },
+
+            //分页查询
+            findPage() {
+                //查询参数，当前页码，每页显示条数，查询关键字
+                axios.post("/check/findPage.do", this.pagination).then((res) => {
+                    this.dataList = res.data.rows;
+                    this.pagination.total = res.data.total;
+                })
+            },
+
+            // 重置表单
+            resetForm() {
+            },
+
+            // 弹出添加窗口
+            handleCreate() {
+                this.dialogFormVisible = true;
+            },
+
+            // 弹出编辑窗口  回写数据
+            handleUpdate(row) {
+                //根据id查询详情
+                // 用axios.get("/checkitem/findById.do?id=" +row.id).then()或下面这种
+                axios.get("/check/findById.do", {
+                    params: {
+                        id: row.id
+                    }
+                }).then((res) => {
+                    this.$message({
+                        message: res.data.message,
+                        type: res.data.flag ? "success" : "error" //success error  warning info
+                    });
+                    //编辑回显的详情
+                    this.formData = res.data.data;
+                    this.dialogFormVisible4Edit = true;
+                })
+            },
+
+            //切换页码
+            handleCurrentChange(currentPage) {
+                this.pagination.currentPage = currentPage;
+                this.findPage();
+            },
+
+            // 删除
+            handleDelete(row) {
+                var b = window.confirm("您确定删除？");
+                if (b) {
+                    //根据id删除
+                    axios.delete("/check/deleteByID.do?id=" + row.id).then((res) => {
+                        this.findPage();
+                    }).catch((error) => {
+                        alert("请重试！");
+                    });
+                }
+                this.$message({
+                    message: res.data.message,
+                    type: res.data.flag ? "success" : "error" //success error  warning info
+                });
+            }
+        }
+    })
+</script>
+</html>
