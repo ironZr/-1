@@ -14,15 +14,19 @@
 			http://www.springframework.org/schema/context
 			http://www.springframework.org/schema/context/spring-context.xsd">
 
+    <!--    应用名称        -->
     <dubbo:application name="health_web"/>
 
+    <!--    注册中心地址      -->
     <dubbo:registry address="zookeeper://192.168.56.102:2181"/>
 
+    <!--    dubbo包扫描    -->
     <dubbo:annotation package="cn.zr.web"/>
 
+    <!--    启动消费者时不检查服务提供是否启动 在这里设置timeout="600000" 全局超时时间      -->
     <dubbo:consumer check="true" timeout="60000"/>
 
-
+    <!--    mvc注解驱动     -->
     <mvc:annotation-driven/>
 
 </beans>

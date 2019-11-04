@@ -4,12 +4,15 @@ import cn.zr.constant.MessageConstant;
 import cn.zr.entity.PageResult;
 import cn.zr.entity.QueryPageBean;
 import cn.zr.entity.Result;
+import cn.zr.exception.CheckItemException;
 import cn.zr.pojo.CheckItem;
 import cn.zr.service.CheckService;
 import com.alibaba.dubbo.config.annotation.Reference;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 
 @RestController
@@ -66,14 +69,27 @@ public class CheckController {
         }
     }
 
+    //删除
     @RequestMapping("/deleteByID")
     public Result deleteByID(Integer id) {
         try {
             checkService.deleteByID(id);
-            return new Result(true, "");
+        }catch (CheckItemException e) {
+            e.printStackTrace();
+            return new Result(false, e.getMessage());
+        }
+        return new Result(true, "删除成功！");
+    }
+
+
+    @RequestMapping("/findAllItems")
+    public Result findAllItems() {
+        try {
+            List<CheckItem> list = checkService.findAllItems();
+            return new Result(true, "", list);
         } catch (Exception e) {
             e.printStackTrace();
-            return new Result(false, "数据有误，请联系管理员！");
+            return new Result(false, "请刷新页面");
         }
     }
 

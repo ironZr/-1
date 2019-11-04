@@ -17,8 +17,12 @@
          http://www.springframework.org/schema/tx
          http://www.springframework.org/schema/tx/spring-tx.xsd">
 
+<!--spring和mybatis做整合-->
+
+    <!--引入外部资源-->
     <context:property-placeholder location="classpath:jdbc.properties"/>
 
+    <!--配置数据源-->
     <bean class="com.alibaba.druid.pool.DruidDataSource" id="dataSource">
         <property name="driverClassName" value="${jdbc.driveClass}"/>
         <property name="url" value="${jdbc.url}"/>
@@ -26,13 +30,14 @@
         <property name="password" value="${jdbc.password}"/>
     </bean>
 
+    <!--配置sqlSessionFactory-->
     <bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sqlSessionFactory">
         <property name="dataSource" ref="dataSource"/>
         <property name="typeAliasesPackage" value="cn.zr.pojo"/>
         <property name="configLocation" value="classpath:mybatis-config.xml"/>
         <property name="mapperLocations" value="classpath*:mapper/*.xml"/>
 
-        <!--        配置分页插件-->
+        <!--配置分页插件-->
         <property name="plugins">
             <array>
                 <bean class="com.github.pagehelper.PageInterceptor">
@@ -48,17 +53,29 @@
 
     </bean>
 
+    <!--配置MapperScannerConfigurer  spring实例化usermapper的动态实现,代替了我们获取代理对象
+    获得符合Mapper映射器要求的对象(相当于调用SqlSession的getMapper()方法)。
+    并且会将这些对象放到spring容器里面（默认的id是首字母小写之后的接口名)
+    比如Mapper映射器名为UserMapper,则默认的id是userMapper,也可以使用@Repository来修改默认的id
+    -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="basePackage" value="cn.zr.mapper"/>
     </bean>
 
+<!--spring和mvc做整合-->
 
+    <!--配置dubbo-->
+
+    <!--  配置一下应用名称（必须配置）-->
     <dubbo:application name="health_service"/>
 
+    <!--  配置要连接的注册中心地址  -->
     <dubbo:registry address="zookeeper://192.168.56.102:2181"/>
 
+    <!--  配置服务的端口，协议。端口默认：20880，可以写-1就是随机（从20880开始......2088n）-->
     <dubbo:protocol name="dubbo" port="-1"/>
 
+    <!--  配置包扫描（dubbo） -->
     <dubbo:annotation package="cn.zr.service"/>
 
 
@@ -67,6 +84,12 @@
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
+    <!--开启事物==注解方式-->
+    <!--proxy-target-class="true" 让Spring强制使用CGLiib生成代理类 -->
+    <!--事务控制的底层原理是为服务提供者类创建代理对象，而默认情况下Spring是基于JDK动态代理方式创建代理对象，
+        而此代理对象的完整类名为com.sun.proxy.$Proxy42（最后两位数字不是固定的），
+        导致Dubbo在发布服务前进行包匹配时无法完成匹配，进而没有进行服务的发布。
+    -->
     <tx:annotation-driven transaction-manager="dataSourceTransactionManager" proxy-target-class="true"/>
 
 

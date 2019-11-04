@@ -16,6 +16,16 @@ public class CheckGroup implements Serializable {
     private String attention;//注意事项
     private List<CheckItem> checkItems;//一个检查组合包含多个检查项
 
+    private List<Integer> checkitemIds;//前端formDate添加的属性，表示用户勾选的检查项的id集合
+
+    public List<Integer> getCheckitemIds() {
+        return checkitemIds;
+    }
+
+    public void setCheckitemIds(List<Integer> checkitemIds) {
+        this.checkitemIds = checkitemIds;
+    }
+
     public List<CheckItem> getCheckItems() {
         return checkItems;
     }

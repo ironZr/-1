@@ -2,6 +2,7 @@ package cn.zr.service;
 
 import cn.zr.entity.PageResult;
 import cn.zr.entity.QueryPageBean;
+import cn.zr.exception.CheckItemException;
 import cn.zr.mapper.CheckMapper;
 import cn.zr.pojo.CheckItem;
 import com.alibaba.dubbo.config.annotation.Service;
@@ -46,7 +47,20 @@ public class CheckServiceImpl implements CheckService {
     }
 
     @Override
-    public void deleteByID(Integer id) {
-        checkMapper.deleteByID(id);
+    public void deleteByID(Integer id) throws CheckItemException{
+        //根据检查项的id查询当前项目是否被引用
+        Integer count=checkMapper.findTableRelation(id);
+        //如果有引用就提示用户
+        if (count > 0) {
+            throw new CheckItemException("此项存在引用，禁止删除！！！");
+        } else {
+            //没有引用直接删除
+            checkMapper.deleteByID(id);
+        }
+    }
+
+    @Override
+    public List<CheckItem> findAllItems() {
+        return checkMapper.findAllItems();
     }
 }

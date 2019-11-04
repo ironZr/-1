@@ -30,7 +30,7 @@
             <div class="filter-container">
                 <el-input placeholder="项目编码/项目名称" v-model="pagination.queryString" style="width: 200px;"
                           class="filter-item"></el-input>
-                <el-button @click="findPage()" class="dalfBut">查询</el-button>
+                <el-button @click="queryPage()" class="dalfBut">查询</el-button>
                 <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
             </div>
 
@@ -84,10 +84,11 @@
 
 
     <!--    添加的窗口 add   -->
+    <!--    :visible.sync="dialogFormVisible"用来控制窗口的显示和退出   -->
     <el-dialog title="新增检查项" :visible.sync="dialogFormVisible">
-        <el-form :model="formData" :rules="myrules" ref="addFrom" label-position="right">
-
-            <el-form :inline="true" :model="formInline" class="demo-form-inline">
+        <el-form :model="formData" :rules="myrules" ref="addFrom" >
+            <!--:inline="true" class="demo-form-inline"在el-form中会显示在一行，达到并排效果-->
+            <el-form :inline="true" class="demo-form-inline" >
                 <el-form-item label="项目编码" prop="code">
                     <el-input v-model="formData.code"></el-input>
                 </el-form-item>
@@ -96,17 +97,21 @@
                 </el-form-item>
             </el-form>
 
-            <el-form :inline="true" :model="formInline" class="demo-form-inline">
+            <el-form :inline="true" class="demo-form-inline">
                 <el-form-item label="您的年龄" prop="age">
                     <el-input v-model="formData.age"></el-input>
                 </el-form-item>
-                <el-form-item label="您的性别" prop="sex">
-                    <el-select v-model="formData.sex">
-                        <el-option label="男" value="0"></el-option>
-                        <el-option label="女" value="2"></el-option>
-                    </el-select>
+                <el-form-item label="项目价格" prop="price">
+                    <el-input v-model="formData.price"></el-input>
                 </el-form-item>
             </el-form>
+
+            <el-form-item label="您的性别" prop="sex" >
+                <el-select v-model="formData.sex">
+                    <el-option label="男" value="0"></el-option>
+                    <el-option label="女" value="2"></el-option>
+                </el-select>
+            </el-form-item>
 
             <el-form-item label="项目名称" prop="name">
                 <el-input v-model="formData.name"></el-input>
@@ -118,6 +123,8 @@
 
 
     <!--    回写+编辑 窗口   -->
+    <!--    通过：model=“formDate”来的双向绑定来实现数据回写，同步 -->
+    <!--    通过自定义校验规则:rules="myrules"来实现前端的数据校验 -->
     <el-dialog title="编辑检查项" :visible.sync="dialogFormVisible4Edit">
         <el-form :model="formData" :rules="myrules" ref="addFrom">
             <el-form-item label="项目编码" prop="code">
@@ -169,6 +176,17 @@
                 ],
                 sex: [
                     {required: true, message: '请选择性别', trigger: ['change', 'blur']},
+                ],
+                price: [
+                    {required: true, message: '请输入价格', trigger: 'blur'}
+                ],
+                age: [
+                    {required: true, message: '请输入年龄', trigger: 'blur'},
+                    { min: 3, max: 5, message: '年龄为0-100', trigger: 'blur' }
+                ],
+                type: [
+                    { min: 3, max: 5, message: '长度为1!', trigger: 'blur' },
+                    {required: true, message: '请输入类型', trigger: 'blur'}
                 ]
             }
         },
@@ -232,6 +250,16 @@
                 })
             },
 
+            //搜索查询
+            queryPage() {
+                this.pagination.currentPage = 1;
+                //查询参数，当前页码，每页显示条数，查询关键字
+                axios.post("/check/findPage.do", this.pagination).then((res) => {
+                    this.dataList = res.data.rows;
+                    this.pagination.total = res.data.total;
+                })
+            },
+
             // 重置表单
             resetForm() {
             },
@@ -262,6 +290,8 @@
 
             //切换页码
             handleCurrentChange(currentPage) {
+                //currentPage 为 2
+                //this.pagination.currentPage 为 1
                 this.pagination.currentPage = currentPage;
                 this.findPage();
             },
@@ -273,14 +303,14 @@
                     //根据id删除
                     axios.delete("/check/deleteByID.do?id=" + row.id).then((res) => {
                         this.findPage();
+                        this.$message({
+                            message: res.data.message,
+                            type: res.data.flag ? "success" : "error"
+                        });
                     }).catch((error) => {
                         alert("请重试！");
                     });
                 }
-                this.$message({
-                    message: res.data.message,
-                    type: res.data.flag ? "success" : "error" //success error  warning info
-                });
             }
         }
     })

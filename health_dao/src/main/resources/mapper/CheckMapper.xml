@@ -26,4 +26,12 @@
         select * from t_checkitem where id=#{id}
     </select>
 
+    <select id="findAllItems" resultType="cn.zr.pojo.CheckItem">
+        select * from t_checkitem
+    </select>
+
+    <select id="findTableRelation" resultType="java.lang.Integer">
+        select count(*) from t_checkgroup_checkitem where checkitem_id=#{id}
+    </select>
+
 </mapper>
