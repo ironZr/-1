@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>传智健康</title>
+    <meta name="description" content="传智健康">
+    <meta name="keywords" content="传智健康">
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../plugins/elementui/index.css">
+    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/orderset.css">
+    <!-- 引入组件库 -->
+    <script src="../js/vue.js"></script>
+    <script src="../plugins/elementui/index.js"></script>
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script src="../js/axios-0.18.0.js"></script>
+</head>
+<style>
+    .usual {
+        background: pink;
+        text-align: center;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        font-size: 15px;
+        line-height: 1.5;
+    }
+
+    .fulled {
+        color: red;
+        background: whitesmoke;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .self {
+        background: gold;
+        text-align: center;
+        color: red;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        font-size: 15px;
+        line-height: 1.5;
+    }
+</style>
+<body class="hold-transition">
+<div id="app">
+    <div class="content-header">
+        <h1>预约管理
+            <small>预约设置</small>
+        </h1>
+        <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
+            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item>预约管理</el-breadcrumb-item>
+            <el-breadcrumb-item>预约设置</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <div class="app-container">
+        <div class="box">
+            <div class="box ordersetting">
+                <el-card class="box-card">
+                    <div class="boxMain">
+                        <!--下载-->
+                        <el-button style="margin-bottom: 20px;margin-right: 20px" type="primary"
+                                   @click="downloadTemplate()">模板下载
+                        </el-button>
+
+                        <!--上传组件-->
+                        <el-upload action="/ordersetting/upload.do"
+                                   name="excelFile"
+                                   :show-file-list="false"
+                                   :on-success="handleSuccess"
+                                   :before-upload="beforeUpload">
+                            <el-button type="primary">上传文件</el-button>
+                        </el-upload>
+                    </div>
+                    <div>
+                        操作说明：请点击"模板下载"按钮获取模板文件，在模板文件中录入预约设置数据后点击"上传文件"按钮上传模板文件。
+                    </div>
+                </el-card>
+                <div class="calendar">
+
+                    <!--element日历组件，设置calendarValue来指定当前显示的月份。如果calendarValue未指定，则显示当月。
+                        calendarValue支持v-model双向绑定。-->
+                    <el-calendar ref="settingCalendar" v-model="calendarValue">
+                        <!--设置通过名为dateCell的scoped-slot来自定义日历单元格中显示的内容，
+                            在scoped-slot可以设置date当前单元格的日期，vue的data数据（包括类型，isSelected，天属性...）-->
+                        <template slot="dateCell" slot-scope="{date, data}">
+                            <!--给月份+1，在每个小方块上显示日期 11/7 11/8...-->
+                            {{date.getMonth() + 1}}/{{date.getDate()}}
+                            <!-- 当前单元格日期大于今天的日期才有图标(修改按钮） -->
+                            <i v-if="date > today" class="el-icon-edit" @click="handleOrderSet(date)"></i>   <br>
+                            <!--遍历leftobj:(用于装载页面显示的月份已经进行预约设置的数据)-->
+                            <template v-for="item in leftobj">
+                                <!--判断当前单元格的日和月是否和数据中的日和月相同，用于显示在每个上单元格上-->
+                                <template v-if="item.date == date.getDate() && date.getMonth() == item.month">
+                                    <!--判断如果数据的日为28号并且月份为当前月，则显示谭老师专享-->
+                                    <template v-if="item.date === 28 && date.getMonth() == item.month">
+                                        <div class="self">
+                                            <p><i class="el-icon-user"></i>谭老师专享</p>
+                                            <p>已预约{{1}}人<i class="el-icon-success"></i><b>约满</b></p>
+                                        </div>
+                                    </template>
+                                    <!--判断数据中的可预约数和实际预约数的大小，如果小于，显示可预约，反之，约满-->
+                                    <template v-if="item.number > item.reservations && item.date != 28">
+                                        <div class="usual">
+                                            <p>可预约{{item.number}}人</p>
+                                            <p>已预约{{item.reservations}}人</p>
+                                        </div>
+                                    </template>
+                                    <template v-else-if="item.number <= item.reservations" && item.date !=28>
+                                        <div class="fulled">
+                                            <p>约满</p>
+                                        </div>
+                                    </template>
+                                </template>
+                            </template>
+
+                        </template>
+                    </el-calendar>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<!-- 引入组件库 -->
+<script src="../js/vue.js"></script>
+<script src="../plugins/elementui/index.js"></script>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        //data数据
+        data: {
+            today: new Date(),//当前日期
+            leftobj: [],//用于装载页面显示的月份已经进行预约设置的数据
+            calendarValue: '',//日历当前的value
+        },
+        mounted: function () {
+            this.initData(null);
+        },
+        methods: {
+            //预约设置  day为按钮定义点击事件传的date,当前单元格的日期。@click="handleOrderSet(date)
+            handleOrderSet(day) {
+                /*element的MessaBox弹框组件，调用$prompt方法即可打开消息提示，它模拟了系统的prompt。
+                用可以inputPattern字段自己规定匹配模式，用或者inputValidator规定校验函数。
+                报道查看false或字符串时：均表示校验未通过，同时返回的字符串相当于定义了inputErrorMessage变量。
+                成功则执行then，里面的value是固定写法，表示你输入的值*/
+                this.$prompt('请输入可预约人数', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    inputPattern: /^[0-9]*[1-9][0-9]*$/,
+                    inputErrorMessage: '只能输入正整数'
+                }).then(({value}) => {
+                    //成功后，需要当前单元格的日期还有用户输入的数据
+                    axios.post("/ordersetting/editNumberByDate.do", {
+                        orderDate: this.formatDate(day.getFullYear(), day.getMonth() + 1, day.getDate()), //日期
+                        number: value   //可预约人数
+                    }).then((res) => {
+                        if (res.data.flag) {
+                            //刷新页面
+                            this.initData(day);
+                            this.$message({
+                                type: 'success',
+                                message: res.data.message
+                            });
+                        } else {
+                            this.$message.error(res.data.message);
+                        }
+                    });
+                });
+            },
+            //钩子函数mounted，初始化
+            initData: function (date) {
+                //判断是否非是null，为null则给他赋值。
+                if (!date) {
+                    //获取日历对象
+                    let settingCalendar = this.$refs.settingCalendar;
+                    //为他赋值当前电脑的实际时间
+                    date = settingCalendar.date;
+                }
+
+                //let类似于var  获取2019-11 这种类型日期(和数据库的类型一样）
+                let formatDate = date.getFullYear() + "-" + (date.getMonth() + 1);
+                //查询当前日期的预约日历
+                axios.post("/ordersetting/getOrderSettingByMonth.do?formatDate=" + formatDate).then((res) => {
+                    //leftobj:用于装载页面显示的月份已经进行预约设置的数据
+                    this.leftobj = res.data.data;
+                    console.log(this.leftobj);
+                });
+
+                //假数据
+                // this.leftobj = [
+                //     {"date":22,"mouth":8,"number":300,"reservations":300,},
+                //     {"date":23,"mouth":8,"number":300,"reservations":10,},
+                //     {"date":24,"mouth":8,"number":300,"reservations":15,},
+                //     {"date":25,"mouth":8,"number":300,"reservations":100,},
+                //     {"date":26,"mouth":8,"number":300,"reservations":150,},
+                //     {"date":27,"mouth":8,"number":300,"reservations":1,},
+                // ]
+            },
+            // 返回 类似 2016-01-02 格式的字符串
+            formatDate: function (year, month, day) {
+                var y = year;
+                var m = month;
+                //不足2为，添一个0
+                if (m < 10) m = "0" + m;
+                var d = day;
+                if (d < 10) d = "0" + d;
+                return y + "-" + m + "-" + d;
+            },
+            //上传之前进行文件格式校验
+            beforeUpload(file) {
+                const isXLS = file.type === 'application/vnd.ms-excel';
+                if (isXLS) {
+                    return true;
+                }
+                const isXLSX = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+                if (isXLSX) {
+                    return true;
+                }
+                this.$message.error('上传文件只能是xls或者xlsx格式!');
+                return false;
+            },
+            //下载模板文件  如果为地址，则是访问，其他都是下载（文件、图片...)
+            downloadTemplate() {
+                window.location.href = "../../template/ordersetting_template.xlsx";
+            },
+            //上传成功提示
+            handleSuccess(response, file) {
+                if (response.flag) {
+                    // location.reload();
+                    this.initData(null);
+                    this.$message({
+                        message: response.message,
+                        type: 'success'
+                    });
+                } else {
+                    this.$message.error(response.message);
+                }
+            },
+            //初始化当前页要展示的日期
+        },
+        watch: {
+            //当点击上月 下月 当前月触发
+            calendarValue(newVal, oldVal) {
+                this.initData(newVal);
+            }
+        }
+    })
+</script>
+</html>

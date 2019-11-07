@@ -16,4 +16,6 @@ public interface CheckGroupService {
     CheckGroup findById(Integer id);
 
     void eait(CheckGroup checkGroup);
+
+    List<CheckGroup> findAll();
 }

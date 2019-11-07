@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://www.springframework.org/schema/mvc
+         http://www.springframework.org/schema/mvc/spring-mvc.xsd
+         http://code.alibabatech.com/schema/dubbo
+         http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+         http://www.springframework.org/schema/context
+         http://www.springframework.org/schema/context/spring-context.xsd
+         http://www.springframework.org/schema/tx
+         http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!--开启注解扫描-->
+    <context:component-scan base-package="cn.zr.jobs"/>
+
+    <!--1.配置任务（可以配置多个）-->
+    <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean" id="detail">
+        <!--告诉框架执行的任务类是哪个-->
+        <property name="targetObject" ref="clearImages"/>
+
+        <!--告诉它执行的是哪个方法-->
+        <property name="targetMethod" value="run"/>
+    </bean>
+
+    <!--2.配置触发器-->
+    <bean class="org.springframework.scheduling.quartz.CronTriggerFactoryBean" id="cronTriggerFactoryBean">
+        <!--要触发的那个任务-->
+        <property name="jobDetail" ref="detail"/>
+
+        <!--配置时间，什么时候干-->
+        <property name="cronExpression" value="*/5 * * * * ?"/>
+    </bean>
+
+    <!--3.调度器-->
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean" id="schedulerFactoryBean">
+        <!-- 注入多个触发器 -->
+        <property name="triggers">
+            <list>
+                <ref bean="cronTriggerFactoryBean"/>
+<!--                <ref bean="cronTriggerFactoryBean123"/>-->
+            </list>
+        </property>
+    </bean>
+
+</beans>

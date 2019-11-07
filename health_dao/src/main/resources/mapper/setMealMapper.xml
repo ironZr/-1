@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.zr.mapper.SetMealMapper">
+
+    <insert id="addSetmeal" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        insert into t_setmeal values (null,#{name},#{code},#{helpCode},#{sex},#{age},#{price},#{remark},#{attention},#{img})
+    </insert>
+
+    <insert id="addRelation">
+        insert into t_setmeal_checkgroup values
+        <foreach collection="list" item="map" separator=","  >
+            (${map.stemeal_id},#{map.checkgroup_id})
+        </foreach>
+    </insert>
+
+    <select id="findPage" resultType="cn.zr.pojo.Setmeal">
+        select * from t_setmeal
+        <if test="queryString!=null and queryString.trim()!=''">
+            where  code = #{queryString} or name = #{queryString} or helpCode = #{queryString}
+        </if>
+    </select>
+</mapper>

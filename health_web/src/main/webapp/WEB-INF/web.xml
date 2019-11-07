@@ -12,6 +12,7 @@
             <param-name>encoding</param-name>
             <param-value>utf-8</param-value>
         </init-param>
+        <!--    不配置只处理请求，不处理响应-->
         <init-param>
             <param-name>forceEncoding</param-name>
             <param-value>true</param-value>

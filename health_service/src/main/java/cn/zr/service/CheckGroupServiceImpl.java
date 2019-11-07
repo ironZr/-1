@@ -84,4 +84,9 @@ public class CheckGroupServiceImpl implements CheckGroupService {
         //建立新的关系
         this.groupRelationItems(checkGroup.getId(), checkGroup.getCheckitemIds());
     }
+
+    @Override
+    public List<CheckGroup> findAll() {
+       return checkGroupMapper.findAll();
+    }
 }

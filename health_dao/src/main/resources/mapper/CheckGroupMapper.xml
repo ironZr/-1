@@ -63,4 +63,8 @@
     <select id="findByIdRealtionItem" resultType="java.lang.Integer">
         select checkitem_id from t_checkgroup_checkitem where checkgroup_id=#{id}
     </select>
+
+    <select id="findAll" resultType="cn.zr.pojo.CheckGroup">
+        select * from t_checkgroup
+    </select>
 </mapper>

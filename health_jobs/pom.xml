@@ -10,15 +10,22 @@
     <modelVersion>4.0.0</modelVersion>
 
     <packaging>war</packaging>
-
-    <artifactId>health_web</artifactId>
-
+    <artifactId>health_jobs</artifactId>
 
     <dependencies>
+
         <dependency>
             <groupId>cn.zr</groupId>
             <artifactId>health_interfaces</artifactId>
             <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz-jobs</artifactId>
         </dependency>
 
     </dependencies>
@@ -30,7 +37,7 @@
                 <artifactId>tomcat7-maven-plugin</artifactId>
                 <configuration>
                     <!-- 指定端口 -->
-                    <port>82</port>
+                    <port>88</port>
                     <!-- 请求路径 -->
                     <path>/</path>
                 </configuration>

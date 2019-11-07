@@ -25,4 +25,7 @@ public interface CheckGroupMapper {
     List<Integer> findByIdRealtionItem(@Param("id") Integer id);
 
     void deleteRelation(@Param("id") Integer id);
+
+    List<CheckGroup> findAll();
+
 }
